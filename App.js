@@ -1,7 +1,6 @@
 // https://chat-app-server-kc0e.onrender.com
 
 import React, { useState, useEffect } from "react";
-import Fireworks from "react-native-fireworks";
 import {
   SafeAreaView,
   TextInput,
@@ -18,13 +17,10 @@ const socket = io("https://chat-app-server-kc0e.onrender.com");
 export default function App() {
   const [message, setMessage] = useState("");
   const [chatMessages, setChatMessages] = useState([]);
-  const [showFireworks, setShowFireworks] = useState(false);
-
-  useEffect(() => {
-    if (showFireworks) {
-      const time = setTimeout;
-    }
-  });
+  const [username, setUsername] = useState("");
+  const [tempUser, setTempUser] = useState("");
+  const [room, setRoom] = useState("");
+  const [tempRoom, setTempRoom] = useState("");
 
   useEffect(() => {
     socket.on("message", (msg) => {
@@ -49,11 +45,46 @@ export default function App() {
       setMessage("");
     }
   };
+
+  if (!username || !room) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <TextInput
+          placeholder="enter username"
+          value={tempUser}
+          onChangeText={setTempUser}
+          style={styles.input}
+        ></TextInput>
+
+        <TextInput
+          placeholder="enter room name"
+          value={tempRoom}
+          onChangeText={setTempRoom}
+          style={styles.input}
+        ></TextInput>
+
+        <Button
+          title="join chat"
+          onPress={() => {
+            setUsername(tempUser);
+            setRoom(tempRoom);
+            socket.emit("joinRoom", { username: tempUser, room: tempRoom });
+          }}
+        />
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <FlatList
         data={chatMessages}
-        renderItem={({ item }) => <Text>{item}</Text>}
+        renderItem={({ item }) => (
+          <Text>
+            <Text style={{ fontWeight: "bold" }}>{item.user} </Text>
+            {item.text}
+          </Text>
+        )}
         keyExtractor={(item, index) => index.toString()}
       />
       <View style={styles.entryArea}>
